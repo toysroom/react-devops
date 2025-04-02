@@ -38,6 +38,21 @@ pipeline {
                 sh 'docker build -t my-react-app:latest .' 
             }
         }
+
+        stage('Login to ACR') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: '85c7ecb9-125d-429d-bc12-380a6f79aa4a', usernameVariable: 'ACR_USERNAME', passwordVariable: 'ACR_PASSWORD')]) {
+                    sh 'docker login $ACR_LOGIN_SERVER -u $ACR_USERNAME -p $ACR_PASSWORD'
+                }
+            }
+        }
+        stage('Push to ACR') {
+            steps {
+                sh 'docker tag my-react-app $ACR_LOGIN_SERVER/my-react-app:latest'
+                sh 'docker push $ACR_LOGIN_SERVER/my-react-app:latest'
+            }
+        }
+
         stage('Deploy to Azure App Service') {
             steps {
                 withCredentials([azureServicePrincipal('b1117f31-b4d7-4a67-8207-4b8742f03c18')]) {
